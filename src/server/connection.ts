@@ -131,6 +131,8 @@ export class Connection {
         this.pages.length = 0;
         this.wantConnection = false;
         this.wantDisconnection = false;
+
+        setTimeout(() => this.server.removeConnectionFromConnections(this), 2500);
     }
 
     public equals(connection: Connection): boolean {

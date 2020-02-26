@@ -1,4 +1,4 @@
-import { Defs, kissTNC, Packet } from 'ax25';
+import { Defs, kissTNCTcp, Packet } from 'ax25';
 import { User } from './user';
 import { Connection } from './connection';
 import { Utils } from './utils';
@@ -24,25 +24,24 @@ export class Ax25Server {
     public visited: Visited[] = [];
     public heard: Visited[] = [];
 
-    private tnc: kissTNC;
+    private tnc: kissTNCTcp;
+    private signalDeath: boolean;
 
     constructor(
         public callsign: string, public ssid: number, config: ServerConfig,
-        serialPort = '/dev/pts/1', baudRate = 1200
+        ip = '127.0.0.1', port = 8001
     ) {
         Object.assign(this.config, config);
 
-        this.tnc = new kissTNC({
-            serialPort,
-            baudRate
+        this.tnc = new kissTNCTcp({
+            ip,
+            port
         });
 
         this.tnc.on('error', (err: any) => console.error(err));
 
         this.tnc.on('opened', () => {
-            if (this.config.log) {
-                console.log('Node ax25 demarre ! Acces par : ' + this.callsign + (this.ssid ? '-' + this.ssid : ''));
-            }
+            console.log('Node ax25 demarre ! Acces par : ' + this.callsign + (this.ssid ? '-' + this.ssid : ''));
 
             if (this.config.beaconMessage) {
                 setInterval(() => this.sendBeacon(), this.config.beaconTime * 1000);
@@ -53,17 +52,25 @@ export class Ax25Server {
         });
 
         ON_DEATH((signal: any, err: any) => {
-            let sec = 1;
+            if (!this.signalDeath && this.connections.length > 0) {
+                this.signalDeath = true;
+                console.log('Le node se fermera quand les ' + this.connections.length + ' utilisateurs seront deconnectes');
 
-            for (const connection of this.connections.filter((c: Connection) => c.connected)) {
-                connection.sendString('Fermeture du node !');
-                connection.disconnect();
-
-                sec += 10;
+                for (const connection of this.connections.filter((c: Connection) => c.connected)) {
+                    connection.sendString('Fermeture du node !');
+                    this.config.sendAllAction = false;
+                    connection.close();
+                    setTimeout(() => {
+                        console.log(this.connections.length + ' utilisateurs connectes');
+                        if (this.connections.length === 0) {
+                            console.log('Arret du node');
+                            process.exit();
+                        }
+                    }, 10000);
+                }
+            } else {
+                process.exit();
             }
-
-            console.log('Le node se fermera dans ' + sec + ' secondes !');
-            setTimeout(() => process.exit(), sec * 1000);
         });
     }
 
@@ -74,11 +81,11 @@ export class Ax25Server {
 
             const user = User.createFromPacket(packet);
 
-            if (this.config.log && this.isPacketForMe(packet, true)) {
-                console.log('RX : ' + new Date().toLocaleString() + ' : ' + packet.log());
-            }
-
             if (this.isPacketForMe(packet)) {
+                if (this.config.log) {
+                    console.log('RX : ' + new Date().toLocaleString() + ' : ' + packet.log());
+                }
+
                 let connection: Connection = this.getConnectionFromUser(user);
 
                 if (!connection) {
@@ -162,7 +169,7 @@ export class Ax25Server {
 
     public sendPacket(packet: Packet): void {
         try {
-            if (this.config.log && packet.destinationCallsign !== this.config.beaconCallsign) {
+            if (this.config.log && this.isPacketForMe(packet, true)) {
                 console.log('TX : ' + new Date().toLocaleString() + ' : ' + packet.log());
             }
 
@@ -176,7 +183,8 @@ export class Ax25Server {
         return this.connections.find((c: Connection) => c.user.equals(user));
     }
 
-    public removeConnectionFromConnection(connection: Connection): void {
+    public removeConnectionFromConnections(connection: Connection): void {
+        console.log('Suppression de ' + connection.user);
         Utils.deleteInArray(this.connections, (c: Connection) => c.equals(connection));
     }
 }

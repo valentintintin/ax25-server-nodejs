@@ -8,7 +8,7 @@ export class PageBase extends Page {
     constructor(connection: Connection) {
         super(connection, 'Page d\'acceuil');
 
-        this.welcome = 'Bienvenu(e) sur mon node experimental demarre le ' + this.connection.server.startedDate.toLocaleString() + '.'
+        this.welcome = 'Bienvenu sur mon node experimental demarre le ' + this.connection.server.startedDate.toLocaleString()
             + '\n' + this.getStringListCommand();
     }
 
@@ -16,9 +16,9 @@ export class PageBase extends Page {
         return [
             { command: 'j', info: 'Jeux' },
             { command: 'c', info: 'Mode conversation' },
-            { command: 'sl 1', info: 'Saut de ligne CR' },
-            { command: 'sl 2', info: 'Saut de ligne CR + LF' },
-            { command: 'sl 3', info: 'Saut de ligne LF' },
+            // { command: 'sl 1', info: 'Saut de ligne CR' },
+            // { command: 'sl 2', info: 'Saut de ligne CR + LF' },
+            // { command: 'sl 3', info: 'Saut de ligne LF' },
         ].concat(super.getListCommand());
     }
 

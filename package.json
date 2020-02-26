@@ -2,11 +2,12 @@
   "name": "server-ax25",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
+  "main": "src/app.ts",
   "dependencies": {
     "ax25": "git+https://github.com/valentintintin/node-ax25.git",
     "death": "^1.1.0",
-    "serialport": "^8.0.7"
+    "serialport": "^8.0.7",
+    "telnet-client": "^1.2.11"
   },
   "devDependencies": {
     "@types/node": "^13.7.6",
@@ -16,7 +17,7 @@
     "typescript": "^3.8.2"
   },
   "scripts": {
-    "start": "ts-node app.ts"
+    "start": "ts-node src/app.ts"
   },
   "author": "Valentin Saugnier",
   "license": "ISC"

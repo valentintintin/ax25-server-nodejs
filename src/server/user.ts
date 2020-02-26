@@ -22,7 +22,7 @@ export class User {
                 return 'Christophe';
 
             case 'f5kga':
-                return 'ADRI 38';
+                return 'ADRI38';
 
             case 'f5lgj':
                 return 'Olivier';
@@ -35,6 +35,9 @@ export class User {
 
             case 'f4hvx':
                 return 'Julien';
+
+            case 'f4hka':
+                return 'Jeremy';
 
             default:
                 return null;
