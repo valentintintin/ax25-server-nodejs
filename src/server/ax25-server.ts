@@ -1,8 +1,9 @@
-import {Defs, kissTNC, Packet, Session} from "ax25";
-import {User} from "./user";
-import {Connection} from "./connection";
-import {Utils} from "./utils";
-const ON_DEATH = require("death");
+import { Defs, kissTNC, Packet } from 'ax25';
+import { User } from './user';
+import { Connection } from './connection';
+import { Utils } from './utils';
+
+const ON_DEATH = require('death');
 
 export class Ax25Server {
 
@@ -12,8 +13,8 @@ export class Ax25Server {
         sendAllWithDate: true,
         sendAllAction: true,
 
-        endPrompt: "=>",
-        endOfLine: "\r\n",
+        endPrompt: '=>',
+        endOfLine: '\r\n',
     };
 
     public config: ServerConfig = Ax25Server.defaultConfig;
@@ -27,20 +28,20 @@ export class Ax25Server {
 
     constructor(
         public callsign: string, public ssid: number, config: ServerConfig,
-        serialPort: string = "/dev/soundmodem0", baudRate: number = 9600
+        serialPort = '/dev/pts/1', baudRate = 1200
     ) {
         Object.assign(this.config, config);
 
         this.tnc = new kissTNC({
-            serialPort : serialPort,
-            baudRate : baudRate
+            serialPort,
+            baudRate
         });
 
-        this.tnc.on("error", (err: any) => console.error(err));
+        this.tnc.on('error', (err: any) => console.error(err));
 
-        this.tnc.on("opened", () => {
+        this.tnc.on('opened', () => {
             if (this.config.log) {
-                console.log("Node ax25 demarre ! Acces par : " + this.callsign + (this.ssid ? "-" + this.ssid : ""));
+                console.log('Node ax25 demarre ! Acces par : ' + this.callsign + (this.ssid ? '-' + this.ssid : ''));
             }
 
             if (this.config.beaconMessage) {
@@ -48,20 +49,20 @@ export class Ax25Server {
                 setTimeout(() => this.sendBeacon(), 3000);
             }
 
-            this.tnc.on("frame", (frame: any) => this.receive(frame));
+            this.tnc.on('frame', (frame: any) => this.receive(frame));
         });
 
         ON_DEATH((signal: any, err: any) => {
-            let sec = 0;
+            let sec = 1;
 
             for (const connection of this.connections.filter((c: Connection) => c.connected)) {
-                connection.sendString("Fermeture du node !");
+                connection.sendString('Fermeture du node !');
                 connection.disconnect();
 
                 sec += 10;
             }
 
-            console.log("Le node se fermera dans " + sec + " secondes !");
+            console.log('Le node se fermera dans ' + sec + ' secondes !');
             setTimeout(() => process.exit(), sec * 1000);
         });
     }
@@ -74,7 +75,7 @@ export class Ax25Server {
             const user = User.createFromPacket(packet);
 
             if (this.config.log && this.isPacketForMe(packet, true)) {
-                console.log("RX : " + new Date().toLocaleString() + " : " + packet.log());
+                console.log('RX : ' + new Date().toLocaleString() + ' : ' + packet.log());
             }
 
             if (this.isPacketForMe(packet)) {
@@ -95,44 +96,44 @@ export class Ax25Server {
 
                 Utils.deleteInArray(this.visited, (v: Visited) => v.user.equals(user));
                 this.visited.unshift({
-                    user: user, date: new Date()
+                    user, date: new Date()
                 });
             }
 
             Utils.deleteInArray(this.heard, (v: Visited) => v.user.equals(user));
             this.heard.unshift({
-                user: user, date: new Date()
+                user, date: new Date()
             });
         } catch (err) {
             console.error(err);
         }
     }
 
-    public sendToAll(text: string, fromConnection: Connection, withMe: boolean = true, connectionsToSend: Connection[] = null): void {
+    public sendToAll(text: string, fromConnection: Connection, withMe = true, connectionsToSend: Connection[] = null): void {
         let connections: Connection[];
 
-        let str = "<";
+        let str = '<';
 
         if (!connectionsToSend) {
-            str = "*";
+            str = '*';
         }
 
         str += fromConnection.user;
 
         if (!connectionsToSend) {
-            str += "*";
+            str += '*';
             connections = this.connections.filter((c: Connection) => c.connected && !c.equals(fromConnection));
         } else {
             connections = connectionsToSend.filter((c: Connection) => !c.equals(fromConnection));
 
             if (this.config.sendAllWithDate) {
-                str += " " + new Date().toLocaleTimeString();
+                str += ' ' + new Date().toLocaleTimeString();
             }
 
-            str += ">";
+            str += '>';
         }
 
-        str += " " + text;
+        str += ' ' + text;
 
         for (const c of connections) {
             c.sendString(str);
@@ -143,7 +144,7 @@ export class Ax25Server {
         }
     }
 
-    private isPacketForMe(packet: Packet, fromMe: boolean = false): boolean {
+    private isPacketForMe(packet: Packet, fromMe = false): boolean {
         return (packet.destinationCallsign.trim() === this.callsign && +packet.destinationSSID === +this.ssid)
             || (fromMe && (packet.sourceCallsign.trim() === this.callsign && +packet.sourceSSID === +this.ssid));
     }
@@ -162,7 +163,7 @@ export class Ax25Server {
     public sendPacket(packet: Packet): void {
         try {
             if (this.config.log && packet.destinationCallsign !== this.config.beaconCallsign) {
-                console.log("TX : " + new Date().toLocaleString() + " : " + packet.log());
+                console.log('TX : ' + new Date().toLocaleString() + ' : ' + packet.log());
             }
 
             this.tnc.send(packet.assemble());

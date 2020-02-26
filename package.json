@@ -2,24 +2,21 @@
   "name": "server-ax25",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "app.ts",
   "dependencies": {
     "ax25": "git+https://github.com/valentintintin/node-ax25.git",
     "death": "^1.1.0",
-    "jimp": "^0.2.28",
-    "node-webcam": "^0.4.3",
-    "serialport": "^6.0.4",
-    "speaker": "^0.4.0",
-    "sstv": "git+https://github.com/echicken/node-sstv.git"
+    "serialport": "^8.0.7"
   },
   "devDependencies": {
-    "@types/node": "^9.3.0",
-    "tslint": "^5.9.1",
+    "@types/node": "^13.7.6",
+    "ts-node": "^8.6.2",
+    "tslint": "^6.0.0",
     "types": "^0.1.1",
-    "typescript": "^2.6.2"
+    "typescript": "^3.8.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node app.ts"
   },
   "author": "Valentin Saugnier",
   "license": "ISC"

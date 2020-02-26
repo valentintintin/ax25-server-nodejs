@@ -1,8 +1,8 @@
-import {Packet, Session, Utils} from "ax25";
-import {User} from "./user";
-import {Page} from "./page";
-import {PageBase} from "../pages/page-base";
-import {Ax25Server} from "./ax25-server";
+import { Packet, Session, Utils } from 'ax25';
+import { User } from './user';
+import { Page } from './page';
+import { PageBase } from '../pages/page-base';
+import { Ax25Server } from './ax25-server';
 
 export class Connection {
 
@@ -22,19 +22,19 @@ export class Connection {
             localSSID: server.ssid,
         });
 
-        this.session.on("error", (err: any) => console.error(err));
+        this.session.on('error', (err: any) => console.error(err));
 
-        this.session.on("packet", (packet: Packet) => this.server.sendPacket(packet));
+        this.session.on('packet', (packet: Packet) => this.server.sendPacket(packet));
 
-        this.session.on("data", (data: number[]) => {
+        this.session.on('data', (data: number[]) => {
             if (this.pages.length) {
-                const dataString: string = Utils.byteArrayToString(data).replace(/(\r\n|\n|\r)/gm, "").trim();
+                const dataString: string = Utils.byteArrayToString(data).replace(/(\r\n|\n|\r)/gm, '').trim();
 
                 this.currentPage.receive(dataString, this.getCommandWithParams(dataString));
             }
         });
 
-        this.session.on("connection", (state: boolean) => {
+        this.session.on('connection', (state: boolean) => {
             if (state) {
                 this.wantConnection = true;
             } else {
@@ -49,14 +49,14 @@ export class Connection {
                 this.pages.pop();
                 this.currentPage = this.pages[this.pages.length - 1];
             } else {
-                this.sendString("Vous etes deja sur la premiere page");
+                this.sendString('Vous etes deja sur la premiere page');
             }
         } else {
             this.pages.push(page);
             this.currentPage = page;
         }
 
-        let str: string = "== " + this.currentPage.title + " ==\n\n";
+        let str: string = '== ' + this.currentPage.title + ' ==\n\n';
 
         str += this.currentPage.welcome ? this.currentPage.welcome : this.currentPage.getStringListCommand();
 
@@ -72,16 +72,16 @@ export class Connection {
     }
 
     public sendString(text: string, nbLinesBreakStart = 1) {
-        let str = "";
+        let str = '';
 
         for (let i = 0; i < nbLinesBreakStart; i++) {
-            str += "\n";
+            str += '\n';
         }
 
         str += text;
 
         try {
-            str += (text.endsWith("\n") ? "" : "\n");
+            str += (text.endsWith('\n') ? '' : '\n');
         } catch (e) {}
 
         str += this.server.config.endPrompt;
@@ -103,13 +103,13 @@ export class Connection {
         this.addPage(new PageBase(this));
 
         if (this.server.config.sendAllAction) {
-            this.server.sendToAll("connecte au node", this, false);
+            this.server.sendToAll('connecte au node', this, false);
         }
     }
 
     public close(): void {
         if (this.server.config.sendAllAction) {
-            this.server.sendToAll("deconnecte du node", this, false);
+            this.server.sendToAll('deconnecte du node', this, false);
         }
 
         if (this.server.config.byeMessage) {
@@ -138,6 +138,6 @@ export class Connection {
     }
 
     private getCommandWithParams(text: string): string[] {
-        return text.toLowerCase().split(" ");
+        return text.toLowerCase().split(' ');
     }
 }

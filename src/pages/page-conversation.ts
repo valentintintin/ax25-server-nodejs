@@ -1,6 +1,6 @@
-import {Command, Page} from '../server/page';
-import {Connection} from '../server/connection';
-import {Utils} from '../server/utils';
+import { Command, Page } from '../server/page';
+import { Connection } from '../server/connection';
+import { Utils } from '../server/utils';
 
 export class PageConversation extends Page {
 
@@ -11,37 +11,37 @@ export class PageConversation extends Page {
     }
 
     constructor(connection: Connection) {
-        super(connection, "Conversation");
+        super(connection, 'Conversation');
 
         PageConversation.connectionsOnPage.push(this.connection);
 
-        this.welcome = this.getStringListCommand() + "\n\n" + PageConversation.getStringConnected();
+        this.welcome = this.getStringListCommand() + '\n\n' + PageConversation.getStringConnected();
 
-        this.sendToAll("rentre dans la conversation", false);
+        this.sendToAll('rentre dans la conversation', false);
     }
 
     protected getListCommand(): Command[] {
         return [
-            { command: "/u", info: "Utilisateurs dans la conversation" },
-            { command: "/q", info: "Retour" },
+            { command: '/u', info: 'Utilisateurs dans la conversation' },
+            { command: '/q', info: 'Retour' },
         ];
     }
 
     private static getStringConnected(): string {
-        return "Utilisateurs dans la conversation :\n"
-            + PageConversation.connectionsOnPage.map((c: Connection) => "\t - " + c.user).join("\n");
+        return 'Utilisateurs dans la conversation :\n'
+            + PageConversation.connectionsOnPage.map((c: Connection) => '\t - ' + c.user).join('\n');
     }
 
     public receive(text: string, command: string[]): boolean {
         if (!super.receive(text, command)) {
             switch (command[0]) {
-                case "/u":
+                case '/u':
                     this.sendString(PageConversation.getStringConnected());
                     return true;
 
-                case "/q":
+                case '/q':
                     PageConversation.removeConnection(this.connection);
-                    this.sendToAll("quitte la conversation", false);
+                    this.sendToAll('quitte la conversation', false);
 
                     this.goBack();
                     return true;

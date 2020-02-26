@@ -10,7 +10,7 @@ export class JeuPlusMoins {
     public giveNumber(nb: number): number {
         this.coup++;
 
-        if (nb == this.choosen) {
+        if (nb === this.choosen) {
             return 0;
         } else {
             return nb > this.choosen ? -1 : 1;
